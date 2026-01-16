@@ -40,6 +40,9 @@ export function updateSettingsPanel(
   container: HTMLElement,
   hasFiles: boolean
 ): void {
+  if (settingsOptions) {
+    settingsOptions.hasFiles = hasFiles;
+  }
   const convertBtn = container.querySelector(
     "#convert-btn"
   ) as HTMLButtonElement;
@@ -135,8 +138,15 @@ function render(): void {
           <span class="checkbox__label">${trans.maintainAspectRatio}</span>
         </label>
         
+        <!-- Reset Button -->
+        <button class="btn btn--secondary btn--full" id="reset-btn">
+          ${trans.resetSettings}
+        </button>
+
         <!-- Convert Button -->
-        <button class="btn btn--primary btn--full btn--lg" id="convert-btn" disabled>
+        <button class="btn btn--primary btn--full btn--lg" id="convert-btn" ${
+          settingsOptions.hasFiles ? "" : "disabled"
+        }>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
             <polyline points="7 10 12 15 17 10"></polyline>
@@ -177,6 +187,9 @@ function attachEventListeners(): void {
   const aspectRatioCheckbox = settingsContainer.querySelector(
     "#aspect-ratio-checkbox"
   ) as HTMLInputElement;
+  const resetBtn = settingsContainer.querySelector(
+    "#reset-btn"
+  ) as HTMLButtonElement;
   const convertBtn = settingsContainer.querySelector(
     "#convert-btn"
   ) as HTMLButtonElement;
@@ -221,6 +234,13 @@ function attachEventListeners(): void {
   aspectRatioCheckbox.addEventListener("change", () => {
     currentSettings.maintainAspectRatio = aspectRatioCheckbox.checked;
     settingsOptions!.onChange(currentSettings);
+  });
+
+  // Reset button
+  resetBtn.addEventListener("click", () => {
+    currentSettings = { ...DEFAULT_SETTINGS };
+    settingsOptions!.onChange(currentSettings);
+    render();
   });
 
   // Convert button

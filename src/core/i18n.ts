@@ -29,6 +29,7 @@ export interface Translations {
   fitFill: string;
   maintainAspectRatio: string;
   convertImages: string;
+  resetSettings: string;
 
   // File List
   pending: string;
@@ -74,6 +75,7 @@ const ru: Translations = {
   fitFill: "Растянуть (fill)",
   maintainAspectRatio: "Сохранять пропорции",
   convertImages: "Конвертировать",
+  resetSettings: "Сбросить настройки",
 
   // File List
   pending: "Ожидание",
@@ -119,6 +121,7 @@ const en: Translations = {
   fitFill: "Fill (stretch)",
   maintainAspectRatio: "Maintain aspect ratio",
   convertImages: "Convert Images",
+  resetSettings: "Reset settings",
 
   // File List
   pending: "Pending",

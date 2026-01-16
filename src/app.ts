@@ -77,9 +77,9 @@ export function initApp(): void {
                 <button class="btn btn--primary" style="flex: 1;" id="download-zip-btn">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="7 10 12 15 17 10"></polyline>
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                    <rect x="14" y="2" width="4" height="6" rx="1"></rect>
+                    <rect x="7" y="3" width="10" height="12" rx="2"></rect>
+                    <path d="M10 7h4"></path>
+                    <path d="M10 11h4"></path>
                   </svg>
                   <span id="download-zip-text">${trans.downloadZip}</span>
                 </button>

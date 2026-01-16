@@ -201,7 +201,7 @@ function renderTree(nodes: TreeNode[], level: number): string {
 
         return `
           <div class="file-tree__node" data-path="${node.path}">
-            <div class="file-tree__row" data-action="toggle-folder" data-path="${node.path}" style="padding-left: ${level * 16}px">
+            <div class="file-tree__row" data-action="toggle-folder" data-path="${node.path}" style="padding-left: calc(var(--space-4) + ${level * 16}px)">
               <button class="file-tree__toggle" data-action="toggle-folder" data-path="${node.path}" aria-label="toggle">
                 ${
                   isExpanded
