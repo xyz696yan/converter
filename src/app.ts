@@ -6,6 +6,7 @@
 import type { ConversionOptions, ImageFile } from "./core/types";
 import { convertImageAsync } from "./core/workerManager";
 import { downloadAllImages } from "./core/converter";
+import { downloadAsZip, generateZipName } from "./core/zipDownload";
 import { initLanguage, onLanguageChange, t } from "./core/i18n";
 import { createDropZone } from "./components/DropZone";
 import {
@@ -64,14 +65,25 @@ export function initApp(): void {
             <div id="stats-container"></div>
             <div id="file-list-container"></div>
             <div id="download-all-container" style="margin-top: var(--space-4); display: none;">
-              <button class="btn btn--secondary btn--full" id="download-all-btn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
-                <span id="download-all-text">${trans.downloadAll}</span>
-              </button>
+              <div style="display: flex; gap: var(--space-3);">
+                <button class="btn btn--secondary" style="flex: 1;" id="download-all-btn">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  <span id="download-all-text">${trans.downloadAll}</span>
+                </button>
+                <button class="btn btn--primary" style="flex: 1;" id="download-zip-btn">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                    <rect x="14" y="2" width="4" height="6" rx="1"></rect>
+                  </svg>
+                  <span id="download-zip-text">${trans.downloadZip}</span>
+                </button>
+              </div>
             </div>
           </div>
           <aside id="settings-container"></aside>
@@ -116,6 +128,20 @@ export function initApp(): void {
     }
   });
 
+  // Download ZIP button
+  const downloadZipBtn = document.getElementById(
+    "download-zip-btn"
+  ) as HTMLButtonElement;
+  downloadZipBtn.addEventListener("click", async () => {
+    const completedFiles = state.files.filter((f) => f.result);
+    if (completedFiles.length > 0) {
+      await downloadAsZip(
+        completedFiles.map((f) => f.result!),
+        generateZipName("converted")
+      );
+    }
+  });
+
   // Re-render header on language change
   onLanguageChange(() => {
     const trans = t();
@@ -123,11 +149,13 @@ export function initApp(): void {
     const subtitle = document.querySelector(".header__subtitle");
     const footer = document.querySelector(".footer p");
     const downloadAllText = document.getElementById("download-all-text");
+    const downloadZipText = document.getElementById("download-zip-text");
 
     if (title) title.textContent = trans.appTitle;
     if (subtitle) subtitle.textContent = trans.appSubtitle;
     if (footer) footer.textContent = trans.footerText;
     if (downloadAllText) downloadAllText.textContent = trans.downloadAll;
+    if (downloadZipText) downloadZipText.textContent = trans.downloadZip;
 
     // Re-render file list and stats with new translations
     render();

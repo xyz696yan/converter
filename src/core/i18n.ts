@@ -36,6 +36,8 @@ export interface Translations {
   download: string;
   remove: string;
   downloadAll: string;
+  downloadZip: string;
+  compare: string;
 
   // Stats
   filesConverted: string;
@@ -77,6 +79,8 @@ const ru: Translations = {
   download: "Скачать",
   remove: "Удалить",
   downloadAll: "Скачать все",
+  downloadZip: "Скачать ZIP",
+  compare: "Сравнить",
 
   // Stats
   filesConverted: "Файлов обработано",
@@ -118,6 +122,8 @@ const en: Translations = {
   download: "Download",
   remove: "Remove",
   downloadAll: "Download All",
+  downloadZip: "Download ZIP",
+  compare: "Compare",
 
   // Stats
   filesConverted: "Files Converted",

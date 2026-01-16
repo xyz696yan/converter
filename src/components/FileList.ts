@@ -10,6 +10,7 @@ import {
   downloadImage,
 } from "../core/converter";
 import { t } from "../core/i18n";
+import { showComparison } from "./ImageComparison";
 
 export interface FileListOptions {
   onRemove: (id: string) => void;
@@ -68,6 +69,10 @@ function renderFileItem(file: ImageFile): string {
         src="${previewSrc}" 
         alt="${file.file.name}"
         loading="lazy"
+        data-action="compare"
+        data-id="${file.id}"
+        style="cursor: ${file.result ? "pointer" : "default"}"
+        title="${file.result ? trans.compare : ""}"
       />
       <div class="file-item__info">
         <div class="file-item__name" title="${file.file.name}">${file.file.name}</div>
@@ -82,6 +87,12 @@ function renderFileItem(file: ImageFile): string {
         ${
           file.result
             ? `
+          <button class="file-item__btn file-item__btn--compare" data-action="compare" data-id="${file.id}" title="${trans.compare}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="12" y1="3" x2="12" y2="21"></line>
+            </svg>
+          </button>
           <button class="file-item__btn" data-action="download" data-id="${file.id}" title="${trans.download}">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -134,21 +145,27 @@ function attachEventListeners(
 ): void {
   container.addEventListener("click", (e) => {
     const target = e.target as HTMLElement;
-    const button = target.closest("[data-action]") as HTMLElement;
+    const actionElement = target.closest("[data-action]") as HTMLElement;
 
-    if (!button) return;
+    if (!actionElement) return;
 
-    const action = button.dataset.action;
-    const id = button.dataset.id;
+    const action = actionElement.dataset.action;
+    const id = actionElement.dataset.id;
 
     if (!id) return;
+
+    const file = files.find((f) => f.id === id);
+    if (!file) return;
 
     if (action === "remove") {
       options.onRemove(id);
     } else if (action === "download") {
-      const file = files.find((f) => f.id === id);
-      if (file?.result) {
+      if (file.result) {
         downloadImage(file.result);
+      }
+    } else if (action === "compare") {
+      if (file.result) {
+        showComparison(file, { onClose: () => {} });
       }
     }
   });
