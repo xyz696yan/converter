@@ -717,26 +717,31 @@
 
 .comparison-modal__content {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  inset: var(--space-4);
+  width: auto;
+  height: auto;
+  min-width: 0; /* Override previous */
+  max-width: none;
+  max-height: none;
+  transform: none;
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius-lg);
   padding: var(--space-6);
-  max-width: 90vw;
-  max-height: 90vh;
-  overflow: auto;
+  display: flex;
+  flex-direction: column;
   z-index: calc(var(--z-modal) + 1);
   animation: fadeIn var(--transition-normal);
+  overflow: hidden; /* Prevent body scroll */
 }
 
 .comparison-modal__close {
-  position: absolute;
-  top: var(--space-4);
-  right: var(--space-4);
-  width: 40px;
-  height: 40px;
+  /* Reset absolute positioning since we will move it to flex header */
+  position: static;
+  width: 32px;
+  height: 32px;
+  /* ... existing styles preserved or moved if needed, but 'static' disables top/right */
+  flex-shrink: 0;
   border-radius: var(--radius-full);
   background: var(--color-bg-tertiary);
   border: 1px solid var(--color-border);
@@ -765,8 +770,11 @@
 .comparison-slider {
   position: relative;
   width: 100%;
-  max-width: 800px;
-  aspect-ratio: 16 / 10;
+
+  /* Slider cleanup */
+  flex: 1;
+  min-height: 0;
+  max-width: 100%;
   border-radius: var(--radius-lg);
   overflow: hidden;
   cursor: col-resize;
@@ -870,4 +878,60 @@
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   margin-top: var(--space-1);
+}
+
+/* Zoom Controls */
+.comparison-modal__controls {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+}
+
+.comparison-control-btn {
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.comparison-control-btn:hover {
+  background: var(--color-bg-elevated);
+  border-color: var(--color-border-hover);
+  color: var(--color-text-primary);
+}
+
+.comparison-control-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Zoomable Image */
+.comparison-slider {
+  cursor: grab;
+  touch-action: none; /* Prevent browser scrolling */
+}
+
+.comparison-slider:active {
+  cursor: grabbing;
+}
+
+.comparison-slider__image {
+  width: 100%;
+  height: 100%;
+  object-fit: scale-down;
+  image-rendering: pixelated; /* Ensure crisp pixels when zoomed */
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.comparison-slider__handle {
+  /* Ensure handle remains clickable/draggable */
+  cursor: col-resize;
 }
