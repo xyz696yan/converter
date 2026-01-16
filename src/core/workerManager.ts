@@ -9,7 +9,7 @@ import type {
   ImageDimensions,
 } from "./types";
 import { FORMAT_EXTENSIONS } from "./types";
-import { loadImage, imageToCanvas, blobToDataUrl } from "./converter";
+import { loadImage, imageToCanvas } from "./converter";
 import ConversionWorker from "./worker?worker";
 
 interface WorkerTask {

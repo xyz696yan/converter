@@ -4,7 +4,6 @@
  */
 
 import type { ImageFile } from "../core/types";
-import { t, onLanguageChange } from "../core/i18n";
 
 export interface ComparisonOptions {
   onClose: () => void;
@@ -29,20 +28,10 @@ export function showComparison(
   }
 
   render(options);
-
-  // Re-render on language change
-  const unsubscribe = onLanguageChange(() => render(options));
-
-  // Store unsubscribe for cleanup
-  (modalContainer as any).__unsubscribe = unsubscribe;
 }
 
 export function hideComparison(): void {
   if (modalContainer) {
-    // Call unsubscribe if exists
-    if ((modalContainer as any).__unsubscribe) {
-      (modalContainer as any).__unsubscribe();
-    }
     modalContainer.innerHTML = "";
     modalContainer.classList.remove("comparison-modal--visible");
   }
@@ -52,8 +41,8 @@ export function hideComparison(): void {
 function render(options: ComparisonOptions): void {
   if (!modalContainer || !currentFile?.result) return;
 
-  const trans = t();
   const file = currentFile;
+  const result = file.result!;
 
   modalContainer.innerHTML = `
     <div class="comparison-modal__backdrop" id="comparison-backdrop"></div>
@@ -73,7 +62,7 @@ function render(options: ComparisonOptions): void {
           <span class="comparison-slider__label comparison-slider__label--before">Before</span>
         </div>
         <div class="comparison-slider__after">
-          <img src="${file.result.dataUrl}" alt="After" class="comparison-slider__image" />
+          <img src="${result.dataUrl}" alt="After" class="comparison-slider__image" />
           <span class="comparison-slider__label comparison-slider__label--after">After</span>
         </div>
         <div class="comparison-slider__handle" id="comparison-handle">
@@ -92,13 +81,13 @@ function render(options: ComparisonOptions): void {
       <div class="comparison-modal__info">
         <div class="comparison-modal__stat">
           <span class="comparison-modal__stat-label">Original:</span>
-          <span>${formatSize(file.result.originalSize)}</span>
-          <span class="comparison-modal__stat-dim">${file.result.originalDimensions.width} × ${file.result.originalDimensions.height}</span>
+          <span>${formatSize(result.originalSize)}</span>
+          <span class="comparison-modal__stat-dim">${result.originalDimensions.width} × ${result.originalDimensions.height}</span>
         </div>
         <div class="comparison-modal__stat">
           <span class="comparison-modal__stat-label">Converted:</span>
-          <span>${formatSize(file.result.newSize)}</span>
-          <span class="comparison-modal__stat-dim">${file.result.newDimensions.width} × ${file.result.newDimensions.height}</span>
+          <span>${formatSize(result.newSize)}</span>
+          <span class="comparison-modal__stat-dim">${result.newDimensions.width} × ${result.newDimensions.height}</span>
         </div>
       </div>
     </div>
