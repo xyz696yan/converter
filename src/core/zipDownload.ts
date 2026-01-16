@@ -19,7 +19,8 @@ export async function downloadAsZip(
 
   // Add each image to the ZIP
   for (const image of images) {
-    zip.file(image.newName, image.blob);
+    const zipPath = getZipPath(image);
+    zip.file(zipPath, image.blob);
   }
 
   // Generate ZIP blob
@@ -53,4 +54,20 @@ export function generateZipName(prefix: string = "images"): string {
   const date = new Date();
   const timestamp = date.toISOString().slice(0, 10);
   return `${prefix}-${timestamp}.zip`;
+}
+
+function getZipPath(image: ConvertedImage): string {
+  if (!image.relativePath) {
+    return image.newName;
+  }
+
+  const normalized = image.relativePath.replace(/\\/g, "/").replace(/^\/+/, "");
+  const lastSlash = normalized.lastIndexOf("/");
+
+  if (lastSlash === -1) {
+    return image.newName;
+  }
+
+  const folder = normalized.slice(0, lastSlash + 1);
+  return `${folder}${image.newName}`;
 }

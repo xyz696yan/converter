@@ -34,6 +34,8 @@ export interface ConvertedImage {
   originalName: string;
   /** New filename with correct extension */
   newName: string;
+  /** Relative path within a folder (optional) */
+  relativePath?: string;
   /** Original file size in bytes */
   originalSize: number;
   /** New file size in bytes */
@@ -56,6 +58,8 @@ export interface ImageFile {
   file: File;
   /** Unique ID for tracking */
   id: string;
+  /** Relative path within a folder (optional) */
+  relativePath?: string;
   /** Preview data URL */
   preview: string;
   /** Processing status */

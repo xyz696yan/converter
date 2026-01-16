@@ -13,6 +13,8 @@ export interface Translations {
   // DropZone
   dropTitle: string;
   dropSubtitle: string;
+  browseFiles: string;
+  browseFolder: string;
 
   // Settings
   settings: string;
@@ -56,6 +58,8 @@ const ru: Translations = {
   // DropZone
   dropTitle: "Перетащи изображения сюда",
   dropSubtitle: "или нажми для выбора файлов",
+  browseFiles: "Выбрать файлы",
+  browseFolder: "Выбрать папку",
 
   // Settings
   settings: "Настройки",
@@ -99,6 +103,8 @@ const en: Translations = {
   // DropZone
   dropTitle: "Drop images here",
   dropSubtitle: "or click to browse files",
+  browseFiles: "Choose files",
+  browseFolder: "Choose folder",
 
   // Settings
   settings: "Settings",

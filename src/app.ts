@@ -198,7 +198,10 @@ async function handleConvert(): Promise<void> {
         }
       );
 
-      updateFileResult(file.id, result);
+      updateFileResult(file.id, {
+        ...result,
+        relativePath: file.relativePath,
+      });
     } catch (error) {
       updateFileError(
         file.id,
@@ -251,10 +254,22 @@ function handleRemoveFile(id: string): void {
   render();
 }
 
+function handleRemoveMany(ids: string[]): void {
+  const idSet = new Set(ids);
+  state.files.forEach((file) => {
+    if (idSet.has(file.id)) {
+      URL.revokeObjectURL(file.preview);
+    }
+  });
+  state.files = state.files.filter((file) => !idSet.has(file.id));
+  render();
+}
+
 function render(): void {
   // Update file list
   createFileList(fileListContainer, state.files, {
     onRemove: handleRemoveFile,
+    onRemoveMany: handleRemoveMany,
   });
 
   // Update stats
