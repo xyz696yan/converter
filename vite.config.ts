@@ -2,6 +2,9 @@ import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
+  // For GitHub Pages: set to repo name, e.g. '/converter/'
+  // For root domain: set to '/'
+  base: process.env.GITHUB_ACTIONS ? "/converter/" : "/",
   build: {
     target: "esnext",
   },
