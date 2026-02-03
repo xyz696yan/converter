@@ -25,7 +25,7 @@ let settingsOptions: SettingsPanelOptions | null = null;
 
 export function createSettingsPanel(
   container: HTMLElement,
-  options: SettingsPanelOptions
+  options: SettingsPanelOptions,
 ): void {
   settingsContainer = container;
   settingsOptions = options;
@@ -38,13 +38,13 @@ export function createSettingsPanel(
 
 export function updateSettingsPanel(
   container: HTMLElement,
-  hasFiles: boolean
+  hasFiles: boolean,
 ): void {
   if (settingsOptions) {
     settingsOptions.hasFiles = hasFiles;
   }
   const convertBtn = container.querySelector(
-    "#convert-btn"
+    "#convert-btn",
   ) as HTMLButtonElement;
   if (convertBtn) {
     convertBtn.disabled = !hasFiles;
@@ -53,6 +53,11 @@ export function updateSettingsPanel(
 
 export function getSettings(): ConversionOptions {
   return { ...currentSettings };
+}
+
+export function setSettings(settings: Partial<ConversionOptions>): void {
+  currentSettings = { ...currentSettings, ...settings };
+  render();
 }
 
 function render(): void {
@@ -73,6 +78,7 @@ function render(): void {
             <option value="webp" ${currentSettings.format === "webp" ? "selected" : ""}>WebP</option>
             <option value="png" ${currentSettings.format === "png" ? "selected" : ""}>PNG</option>
             <option value="jpeg" ${currentSettings.format === "jpeg" ? "selected" : ""}>JPEG</option>
+            <option value="svg" ${currentSettings.format === "svg" ? "selected" : ""}>SVG</option>
           </select>
         </div>
         
@@ -138,6 +144,17 @@ function render(): void {
           <span class="checkbox__label">${trans.maintainAspectRatio}</span>
         </label>
         
+        <!-- Generate 2x -->
+        <label class="checkbox">
+          <input 
+            type="checkbox" 
+            class="checkbox__input" 
+            id="generate-2x-checkbox"
+            ${currentSettings.generate2x ? "checked" : ""}
+          />
+          <span class="checkbox__label">${trans.generate2x}</span>
+        </label>
+        
         <!-- Reset Button -->
         <button class="btn btn--secondary btn--full" id="reset-btn">
           ${trans.resetSettings}
@@ -167,31 +184,31 @@ function attachEventListeners(): void {
   if (!settingsContainer || !settingsOptions) return;
 
   const formatSelect = settingsContainer.querySelector(
-    "#format-select"
+    "#format-select",
   ) as HTMLSelectElement;
   const qualityRange = settingsContainer.querySelector(
-    "#quality-range"
+    "#quality-range",
   ) as HTMLInputElement;
   const qualityValue = settingsContainer.querySelector(
-    "#quality-value"
+    "#quality-value",
   ) as HTMLSpanElement;
   const widthInput = settingsContainer.querySelector(
-    "#width-input"
+    "#width-input",
   ) as HTMLInputElement;
   const heightInput = settingsContainer.querySelector(
-    "#height-input"
+    "#height-input",
   ) as HTMLInputElement;
   const fitSelect = settingsContainer.querySelector(
-    "#fit-select"
+    "#fit-select",
   ) as HTMLSelectElement;
   const aspectRatioCheckbox = settingsContainer.querySelector(
-    "#aspect-ratio-checkbox"
+    "#aspect-ratio-checkbox",
   ) as HTMLInputElement;
   const resetBtn = settingsContainer.querySelector(
-    "#reset-btn"
+    "#reset-btn",
   ) as HTMLButtonElement;
   const convertBtn = settingsContainer.querySelector(
-    "#convert-btn"
+    "#convert-btn",
   ) as HTMLButtonElement;
 
   // Format change
@@ -235,6 +252,17 @@ function attachEventListeners(): void {
     currentSettings.maintainAspectRatio = aspectRatioCheckbox.checked;
     settingsOptions!.onChange(currentSettings);
   });
+
+  // Generate 2x toggle
+  const generate2xCheckbox = settingsContainer.querySelector(
+    "#generate-2x-checkbox",
+  ) as HTMLInputElement;
+  if (generate2xCheckbox) {
+    generate2xCheckbox.addEventListener("change", () => {
+      currentSettings.generate2x = generate2xCheckbox.checked;
+      settingsOptions!.onChange(currentSettings);
+    });
+  }
 
   // Reset button
   resetBtn.addEventListener("click", () => {

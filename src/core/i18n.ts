@@ -28,6 +28,7 @@ export interface Translations {
   fitCover: string;
   fitFill: string;
   maintainAspectRatio: string;
+  generate2x: string;
   convertImages: string;
   resetSettings: string;
 
@@ -74,6 +75,7 @@ const ru: Translations = {
   fitCover: "Заполнить (cover)",
   fitFill: "Растянуть (fill)",
   maintainAspectRatio: "Сохранять пропорции",
+  generate2x: "Генерировать 2x (@2x)",
   convertImages: "Конвертировать",
   resetSettings: "Сбросить настройки",
 
@@ -120,6 +122,7 @@ const en: Translations = {
   fitCover: "Cover (fill area)",
   fitFill: "Fill (stretch)",
   maintainAspectRatio: "Maintain aspect ratio",
+  generate2x: "Generate 2x (@2x)",
   convertImages: "Convert Images",
   resetSettings: "Reset settings",
 

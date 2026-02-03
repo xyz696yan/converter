@@ -3,7 +3,7 @@
  */
 
 /** Supported output formats */
-export type OutputFormat = "webp" | "png" | "jpeg";
+export type OutputFormat = "webp" | "png" | "jpeg" | "svg";
 
 /** Resize fit modes */
 export type FitMode = "contain" | "cover" | "fill";
@@ -22,6 +22,8 @@ export interface ConversionOptions {
   fit?: FitMode;
   /** Maintain aspect ratio when only width or height is specified */
   maintainAspectRatio?: boolean;
+  /** Generate a 2x version of the image */
+  generate2x?: boolean;
 }
 
 /** Result of image conversion */
@@ -70,6 +72,10 @@ export interface ImageFile {
   result?: ConvertedImage;
   /** Error message if failed */
   error?: string;
+  /** Custom options for this specific file (e.g. for 2x variants) */
+  customOptions?: Partial<ConversionOptions>;
+  /** Display label override */
+  label?: string;
 }
 
 /** Worker message types */
@@ -77,7 +83,7 @@ export type WorkerMessage =
   | {
       type: "convert";
       id: string;
-      imageData: ImageData;
+      imageData: ImageData | string; // string for SVG content
       options: ConversionOptions;
     }
   | { type: "progress"; id: string; progress: number }
@@ -99,6 +105,7 @@ export const FORMAT_MIME_TYPES: Record<OutputFormat, string> = {
   webp: "image/webp",
   png: "image/png",
   jpeg: "image/jpeg",
+  svg: "image/svg+xml",
 };
 
 /** File extensions for output formats */
@@ -106,4 +113,5 @@ export const FORMAT_EXTENSIONS: Record<OutputFormat, string> = {
   webp: ".webp",
   png: ".png",
   jpeg: ".jpg",
+  svg: ".svg",
 };

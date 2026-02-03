@@ -18,9 +18,23 @@ self.onmessage = async (event: MessageEvent) => {
   try {
     postProgress(id, 10);
 
-    const result = await processImage(imageData, options, (progress) => {
-      postProgress(id, progress);
-    });
+    let result: ProcessResult;
+
+    // Handle SVG special case
+    if (options.format === "svg" && typeof imageData === "string") {
+      result = await processSVG(imageData, options, (progress) => {
+        postProgress(id, progress);
+      });
+    } else {
+      // Normal raster image processing
+      result = await processImage(
+        imageData as ImageData,
+        options,
+        (progress) => {
+          postProgress(id, progress);
+        },
+      );
+    }
 
     self.postMessage({
       type: "result",
@@ -48,10 +62,48 @@ interface ProcessResult {
   dimensions: { width: number; height: number };
 }
 
+async function processSVG(
+  svgContent: string,
+  options: ConversionOptions,
+  onProgress: (progress: number) => void,
+): Promise<ProcessResult> {
+  onProgress(20);
+
+  // Dynamic import for optimizer
+  const { optimizeSVG } = await import("./svgOptimizer");
+  onProgress(40);
+
+  const optimizedContent = optimizeSVG(svgContent);
+  onProgress(60);
+
+  const blob = new Blob([optimizedContent], { type: "image/svg+xml" });
+  onProgress(80);
+
+  const dataUrl = await blobToDataUrl(blob);
+
+  // Parse dimensions from SVG string (basic regex)
+  const widthMatch = svgContent.match(/width=["'](\d+(\.\d+)?)["']/);
+  const heightMatch = svgContent.match(/height=["'](\d+(\.\d+)?)["']/);
+
+  // Default to what we can find, or 0 if missing (UI might handle this)
+  const dimensions = {
+    width: widthMatch ? parseFloat(widthMatch[1]) : 0,
+    height: heightMatch ? parseFloat(heightMatch[1]) : 0,
+  };
+
+  onProgress(100);
+
+  return {
+    blob,
+    dataUrl,
+    dimensions,
+  };
+}
+
 async function processImage(
   imageData: ImageData,
   options: ConversionOptions,
-  onProgress: (progress: number) => void
+  onProgress: (progress: number) => void,
 ): Promise<ProcessResult> {
   onProgress(20);
 
@@ -64,7 +116,7 @@ async function processImage(
     originalDimensions,
     { width: options.width, height: options.height },
     options.fit,
-    options.maintainAspectRatio ?? true
+    options.maintainAspectRatio ?? true,
   );
 
   onProgress(30);
@@ -88,7 +140,19 @@ async function processImage(
   onProgress(70);
 
   // Convert to blob
-  const blob = await canvasToBlob(canvas, options.format, options.quality);
+  // For SVG output from raster, we can't really "convert" effectively without tracing,
+  // but if the user selected SVG for a raster input, we might just fail or fallback.
+  // However, options.format is strictly typed.
+  // If the user selected SVG, we generally expect SVG input for this simple app.
+  // If we really needed raster->SVG, we'd embed it as base64 in SVG image tag, but that's rarely what users want.
+  // For now we assume the UI filters valid combinations or we fallback to PNG if trying to save raster as SVG.
+  // Actually, let's just handle standard formats here.
+
+  const blob = await canvasToBlob(
+    canvas,
+    options.format as "webp" | "png" | "jpeg",
+    options.quality,
+  );
 
   onProgress(85);
 
@@ -106,8 +170,8 @@ async function processImage(
 
 async function canvasToBlob(
   canvas: OffscreenCanvas,
-  format: OutputFormat,
-  quality: number
+  format: "webp" | "png" | "jpeg",
+  quality: number,
 ): Promise<Blob> {
   const blob = await canvas.convertToBlob({
     type: FORMAT_MIME_TYPES[format],

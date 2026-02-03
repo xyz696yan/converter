@@ -30,7 +30,7 @@ const folderState = new Map<string, boolean>();
 export function createFileList(
   container: HTMLElement,
   files: ImageFile[],
-  options: FileListOptions
+  options: FileListOptions,
 ): void {
   if (files.length === 0) {
     container.innerHTML = "";
@@ -53,7 +53,7 @@ function renderFileItem(
   file: ImageFile,
   level: number,
   displayName: string,
-  title: string
+  title: string,
 ): string {
   const trans = t();
   const statusClass = `status--${file.status}`;
@@ -64,7 +64,7 @@ function renderFileItem(
   if (file.result) {
     const ratio = calculateCompressionRatio(
       file.result.originalSize,
-      file.result.newSize
+      file.result.newSize,
     );
     const sizeClass =
       ratio >= 0 ? "file-item__size--new" : "file-item__size--bigger";
@@ -79,13 +79,14 @@ function renderFileItem(
   }
 
   const previewSrc = file.result?.dataUrl || file.preview;
+  const nameToDisplay = file.label || displayName;
 
   return `
     <div class="file-item fade-in" data-id="${file.id}" style="margin-left: ${level * 16}px">
       <img 
         class="file-item__preview" 
         src="${previewSrc}" 
-        alt="${displayName}"
+        alt="${nameToDisplay}"
         loading="lazy"
         data-action="compare"
         data-id="${file.id}"
@@ -93,7 +94,7 @@ function renderFileItem(
         title="${file.result ? trans.compare : ""}"
       />
       <div class="file-item__info">
-        <div class="file-item__name" title="${title}">${displayName}</div>
+        <div class="file-item__name" title="${title}">${nameToDisplay}</div>
         <div class="file-item__meta">
           ${sizeInfo}
           <span class="status ${statusClass}">${statusText}</span>
@@ -138,9 +139,7 @@ function buildTree(files: ImageFile[]): TreeNode {
   folderMap.set("", root);
 
   for (const file of files) {
-    const normalizedPath = normalizePath(
-      file.relativePath || file.file.name
-    );
+    const normalizedPath = normalizePath(file.relativePath || file.file.name);
     const parts = normalizedPath.split("/").filter(Boolean);
     let current = root;
     const pathParts: string[] = [];
@@ -285,7 +284,7 @@ function getStatusText(status: ImageFile["status"]): string {
 function attachEventListeners(
   container: HTMLElement,
   files: ImageFile[],
-  options: FileListOptions
+  options: FileListOptions,
 ): void {
   container.onclick = (e) => {
     const target = e.target as HTMLElement;
@@ -308,9 +307,7 @@ function attachEventListeners(
       const normalizedPath = normalizePath(path);
       const ids = files
         .filter((file) => {
-          const filePath = normalizePath(
-            file.relativePath || file.file.name
-          );
+          const filePath = normalizePath(file.relativePath || file.file.name);
           return (
             filePath === normalizedPath ||
             filePath.startsWith(`${normalizedPath}/`)

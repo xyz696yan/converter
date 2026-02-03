@@ -77,29 +77,92 @@ class WorkerManager {
 
   private generateNewFilename(originalName: string, mimeType: string): string {
     const baseName = originalName.replace(/\.[^/.]+$/, "");
-    const format = mimeType.split("/")[1] as keyof typeof FORMAT_EXTENSIONS;
-    const formatKey = format === "jpeg" ? "jpeg" : format;
-    return `${baseName}${FORMAT_EXTENSIONS[formatKey as keyof typeof FORMAT_EXTENSIONS] || ".webp"}`;
+    const format = mimeType.split("/")[1] as
+      | keyof typeof FORMAT_EXTENSIONS
+      | "svg+xml";
+    let formatKey: keyof typeof FORMAT_EXTENSIONS;
+
+    if (format === "svg+xml") {
+      formatKey = "svg";
+    } else if (format === "jpeg") {
+      formatKey = "jpeg";
+    } else {
+      formatKey = format as keyof typeof FORMAT_EXTENSIONS;
+    }
+
+    return `${baseName}${FORMAT_EXTENSIONS[formatKey] || ".webp"}`;
   }
 
   async convertImage(
     file: File,
     options: ConversionOptions,
-    onProgress?: (progress: number) => void
+    onProgress?: (progress: number) => void,
   ): Promise<ConvertedImage> {
     const id = `task-${++this.taskIdCounter}`;
 
-    // Load image and get ImageData
+    // Load image or read text depending on format
     onProgress?.(5);
-    const img = await loadImage(file);
-    const canvas = imageToCanvas(img);
-    const ctx = canvas.getContext("2d")!;
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-    const originalDimensions: ImageDimensions = {
-      width: img.naturalWidth,
-      height: img.naturalHeight,
-    };
+    let transfer: Transferable[] = [];
+    let data: ImageData | string;
+
+    if (options.format === "svg" && file.type === "image/svg+xml") {
+      data = await file.text();
+      // No transferables for string
+    } else {
+      const img = await loadImage(file);
+      console.log(
+        `[WorkerManager] Image loaded: ${img.naturalWidth}x${img.naturalHeight}`,
+      );
+      const canvas = imageToCanvas(img);
+      const ctx = canvas.getContext("2d")!;
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      console.log(`[WorkerManager] ImageData retrieved`);
+      data = imageData;
+      transfer = [imageData.data.buffer];
+    }
+
+    // basic dimensions for initial state (will be refined by worker for SVG)
+    // For SVG we can't easily get natural dimensions without parsing or loading into Img.
+    // If we skip loadImage for SVG, we miss originalDimensions.
+    // So we should probably still load it to get dimensions, OR parse them.
+    // Loading SVG into Image works fine for getting dimensions.
+
+    // Let's load it anyway to get original dimensions, matching existing behavior for `loadImage`.
+    // It's a bit redundant but safe.
+    let originalDimensions: ImageDimensions;
+    if (file.type === "image/svg+xml") {
+      // We already have text in 'data' if we entered the first block?
+      // Actually loadImage works for SVG too.
+      const img = await loadImage(file);
+      originalDimensions = {
+        width: img.naturalWidth,
+        height: img.naturalHeight,
+      };
+      // Free memory
+      img.src = "";
+    } else {
+      // We already loaded it in the else block above?
+      // Refactoring to ensure we get dimensions AND data.
+      // But wait, existing code loaded 'img' then 'imageData'.
+      // If we are in SVG mode, we want 'text'.
+
+      // Let's do this:
+      const img = await loadImage(file);
+      originalDimensions = {
+        width: img.naturalWidth,
+        height: img.naturalHeight,
+      };
+
+      if (options.format === "svg" && file.type === "image/svg+xml") {
+        data = await file.text();
+      } else {
+        const canvas = imageToCanvas(img);
+        const ctx = canvas.getContext("2d")!;
+        data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        transfer = [(data as ImageData).data.buffer];
+      }
+    }
 
     return new Promise((resolve, reject) => {
       this.tasks.set(id, {
@@ -114,10 +177,10 @@ class WorkerManager {
         {
           type: "convert",
           id,
-          imageData,
+          imageData: data,
           options,
         },
-        [imageData.data.buffer]
+        transfer,
       );
     });
   }
@@ -140,7 +203,7 @@ export const workerManager = new WorkerManager();
 export async function convertImageAsync(
   file: File,
   options: ConversionOptions,
-  onProgress?: (progress: number) => void
+  onProgress?: (progress: number) => void,
 ): Promise<ConvertedImage> {
   // Check if workers are supported
   if (typeof Worker !== "undefined") {
@@ -149,7 +212,7 @@ export async function convertImageAsync(
     } catch (error) {
       console.warn(
         "Worker conversion failed, falling back to main thread:",
-        error
+        error,
       );
     }
   }
