@@ -3,7 +3,7 @@
  * Handles image processing in background thread
  */
 
-import type { ConversionOptions, OutputFormat } from "./types";
+import type { ConversionOptions } from "./types";
 import { FORMAT_MIME_TYPES } from "./types";
 import { calculateDimensions, resizeImageData } from "./resizer";
 
@@ -22,7 +22,7 @@ self.onmessage = async (event: MessageEvent) => {
 
     // Handle SVG special case
     if (options.format === "svg" && typeof imageData === "string") {
-      result = await processSVG(imageData, options, (progress) => {
+      result = await processSVG(imageData, (progress) => {
         postProgress(id, progress);
       });
     } else {
@@ -64,7 +64,6 @@ interface ProcessResult {
 
 async function processSVG(
   svgContent: string,
-  options: ConversionOptions,
   onProgress: (progress: number) => void,
 ): Promise<ProcessResult> {
   onProgress(20);
