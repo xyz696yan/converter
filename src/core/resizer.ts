@@ -22,8 +22,8 @@ export function calculateDimensions(
   const targetWidth = target.width || original.width;
   const targetHeight = target.height || original.height;
 
-  // If not maintaining aspect ratio in fill mode
-  if (fit === "fill" && !maintainAspectRatio) {
+  // If not maintaining aspect ratio, use exact target dimensions
+  if (!maintainAspectRatio) {
     return { width: targetWidth, height: targetHeight };
   }
 
@@ -128,6 +128,106 @@ export function resizeCanvas(
     0,
     newDimensions.width,
     newDimensions.height
+  );
+
+  return newCanvas;
+}
+
+/**
+ * Calculate source rectangle for center-crop (cover-scale + crop)
+ */
+function calcCropSourceRect(
+  srcW: number,
+  srcH: number,
+  targetW: number,
+  targetH: number
+): { sx: number; sy: number; sw: number; sh: number } {
+  const scale = Math.max(targetW / srcW, targetH / srcH);
+  const sw = targetW / scale;
+  const sh = targetH / scale;
+  const sx = (srcW - sw) / 2;
+  const sy = (srcH - sh) / 2;
+  return { sx, sy, sw, sh };
+}
+
+/**
+ * Cover-scale and center-crop ImageData to target dimensions (for worker)
+ */
+export function cropAndResizeImageData(
+  imageData: ImageData,
+  targetDimensions: ImageDimensions
+): ImageData {
+  const sourceCanvas = new OffscreenCanvas(imageData.width, imageData.height);
+  const sourceCtx = sourceCanvas.getContext("2d")!;
+  sourceCtx.putImageData(imageData, 0, 0);
+
+  const destCanvas = new OffscreenCanvas(
+    targetDimensions.width,
+    targetDimensions.height
+  );
+  const destCtx = destCanvas.getContext("2d")!;
+  destCtx.imageSmoothingEnabled = true;
+  destCtx.imageSmoothingQuality = "high";
+
+  const { sx, sy, sw, sh } = calcCropSourceRect(
+    imageData.width,
+    imageData.height,
+    targetDimensions.width,
+    targetDimensions.height
+  );
+
+  destCtx.drawImage(
+    sourceCanvas,
+    sx,
+    sy,
+    sw,
+    sh,
+    0,
+    0,
+    targetDimensions.width,
+    targetDimensions.height
+  );
+
+  return destCtx.getImageData(
+    0,
+    0,
+    targetDimensions.width,
+    targetDimensions.height
+  );
+}
+
+/**
+ * Cover-scale and center-crop canvas to target dimensions (for main thread)
+ */
+export function cropAndResizeCanvas(
+  canvas: HTMLCanvasElement,
+  targetDimensions: ImageDimensions
+): HTMLCanvasElement {
+  const newCanvas = document.createElement("canvas");
+  newCanvas.width = targetDimensions.width;
+  newCanvas.height = targetDimensions.height;
+
+  const ctx = newCanvas.getContext("2d")!;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+
+  const { sx, sy, sw, sh } = calcCropSourceRect(
+    canvas.width,
+    canvas.height,
+    targetDimensions.width,
+    targetDimensions.height
+  );
+
+  ctx.drawImage(
+    canvas,
+    sx,
+    sy,
+    sw,
+    sh,
+    0,
+    0,
+    targetDimensions.width,
+    targetDimensions.height
   );
 
   return newCanvas;

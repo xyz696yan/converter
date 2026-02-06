@@ -31,7 +31,7 @@ const state: AppState = {
   files: [],
   settings: {
     format: "webp",
-    quality: 0.85,
+    quality: 0.9,
     maintainAspectRatio: true,
     fit: "contain",
     generate2x: false,

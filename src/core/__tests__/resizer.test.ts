@@ -96,6 +96,38 @@ describe("calculateDimensions", () => {
     });
   });
 
+  describe("maintainAspectRatio=false (center-crop output size)", () => {
+    it("contain mode returns exact target dimensions for crop", () => {
+      const result = calculateDimensions(
+        original,
+        { width: 600, height: 605 },
+        "contain",
+        false
+      );
+      expect(result).toEqual({ width: 600, height: 605 });
+    });
+
+    it("cover mode returns exact target dimensions for crop", () => {
+      const result = calculateDimensions(
+        original,
+        { width: 600, height: 605 },
+        "cover",
+        false
+      );
+      expect(result).toEqual({ width: 600, height: 605 });
+    });
+
+    it("fill mode returns exact target dimensions for crop", () => {
+      const result = calculateDimensions(
+        original,
+        { width: 300, height: 300 },
+        "fill",
+        false
+      );
+      expect(result).toEqual({ width: 300, height: 300 });
+    });
+  });
+
   describe("edge cases", () => {
     it("handles square images", () => {
       const square: ImageDimensions = { width: 500, height: 500 };

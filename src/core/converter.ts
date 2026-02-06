@@ -10,7 +10,11 @@ import type {
   OutputFormat,
 } from "./types";
 import { FORMAT_EXTENSIONS, FORMAT_MIME_TYPES } from "./types";
-import { calculateDimensions, resizeCanvas } from "./resizer";
+import {
+  calculateDimensions,
+  resizeCanvas,
+  cropAndResizeCanvas,
+} from "./resizer";
 
 /**
  * Load an image file into an HTMLImageElement
@@ -132,7 +136,10 @@ export async function convertImage(
     newDimensions.width !== originalDimensions.width ||
     newDimensions.height !== originalDimensions.height
   ) {
-    canvas = resizeCanvas(canvas, newDimensions);
+    const shouldCrop = !(options.maintainAspectRatio ?? true);
+    canvas = shouldCrop
+      ? cropAndResizeCanvas(canvas, newDimensions)
+      : resizeCanvas(canvas, newDimensions);
   }
   onProgress?.(70);
 

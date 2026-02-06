@@ -28,6 +28,10 @@ export interface Translations {
   fitCover: string;
   fitFill: string;
   maintainAspectRatio: string;
+  fitHintContain: string;
+  fitHintCover: string;
+  fitHintFill: string;
+  fitHintNoAspect: string;
   generate2x: string;
   convertImages: string;
   resetSettings: string;
@@ -75,6 +79,10 @@ const ru: Translations = {
   fitCover: "Заполнить (cover)",
   fitFill: "Растянуть (fill)",
   maintainAspectRatio: "Сохранять пропорции",
+  fitHintContain: "Вписывает целиком в заданные размеры, могут быть пустые полосы",
+  fitHintCover: "Заполняет всю область, выходящие за рамки части обрезаются",
+  fitHintFill: "Растягивает до заданных размеров, пропорции могут исказиться",
+  fitHintNoAspect: "Пропорции не сохраняются — картинка будет отмасштабирована и обрезана по центру",
   generate2x: "Генерировать 2x (@2x)",
   convertImages: "Конвертировать",
   resetSettings: "Сбросить настройки",
@@ -122,6 +130,10 @@ const en: Translations = {
   fitCover: "Cover (fill area)",
   fitFill: "Fill (stretch)",
   maintainAspectRatio: "Maintain aspect ratio",
+  fitHintContain: "Fits entirely within the target area, may have empty bands",
+  fitHintCover: "Fills the entire area, parts outside the bounds are cropped",
+  fitHintFill: "Stretches to exact dimensions, proportions may be distorted",
+  fitHintNoAspect: "Aspect ratio ignored — image will be scaled and center-cropped",
   generate2x: "Generate 2x (@2x)",
   convertImages: "Convert Images",
   resetSettings: "Reset settings",

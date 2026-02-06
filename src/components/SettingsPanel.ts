@@ -4,6 +4,7 @@
  */
 
 import type { ConversionOptions, FitMode, OutputFormat } from "../core/types";
+import type { Translations } from "../core/i18n";
 import { t, onLanguageChange } from "../core/i18n";
 
 export interface SettingsPanelOptions {
@@ -58,6 +59,29 @@ export function getSettings(): ConversionOptions {
 export function setSettings(settings: Partial<ConversionOptions>): void {
   currentSettings = { ...currentSettings, ...settings };
   render();
+}
+
+function getFitHint(
+  trans: Translations,
+  fit: FitMode | undefined,
+  maintainAspectRatio: boolean | undefined,
+): string {
+  if (maintainAspectRatio === false) return trans.fitHintNoAspect;
+  if (fit === "cover") return trans.fitHintCover;
+  if (fit === "fill") return trans.fitHintFill;
+  return trans.fitHintContain;
+}
+
+function updateFitHint(): void {
+  if (!settingsContainer) return;
+  const hint = settingsContainer.querySelector("#fit-hint");
+  if (hint) {
+    hint.textContent = getFitHint(
+      t(),
+      currentSettings.fit,
+      currentSettings.maintainAspectRatio,
+    );
+  }
 }
 
 function render(): void {
@@ -131,6 +155,7 @@ function render(): void {
             <option value="cover" ${currentSettings.fit === "cover" ? "selected" : ""}>${trans.fitCover}</option>
             <option value="fill" ${currentSettings.fit === "fill" ? "selected" : ""}>${trans.fitFill}</option>
           </select>
+          <span class="settings__hint" id="fit-hint">${getFitHint(trans, currentSettings.fit, currentSettings.maintainAspectRatio)}</span>
         </div>
         
         <!-- Maintain Aspect Ratio -->
@@ -244,12 +269,14 @@ function attachEventListeners(): void {
   // Fit mode change
   fitSelect.addEventListener("change", () => {
     currentSettings.fit = fitSelect.value as FitMode;
+    updateFitHint();
     settingsOptions!.onChange(currentSettings);
   });
 
   // Aspect ratio toggle
   aspectRatioCheckbox.addEventListener("change", () => {
     currentSettings.maintainAspectRatio = aspectRatioCheckbox.checked;
+    updateFitHint();
     settingsOptions!.onChange(currentSettings);
   });
 

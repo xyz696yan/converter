@@ -5,7 +5,11 @@
 
 import type { ConversionOptions } from "./types";
 import { FORMAT_MIME_TYPES } from "./types";
-import { calculateDimensions, resizeImageData } from "./resizer";
+import {
+  calculateDimensions,
+  resizeImageData,
+  cropAndResizeImageData,
+} from "./resizer";
 
 // Worker message handler
 self.onmessage = async (event: MessageEvent) => {
@@ -126,7 +130,10 @@ async function processImage(
     newDimensions.width !== originalDimensions.width ||
     newDimensions.height !== originalDimensions.height
   ) {
-    processedData = resizeImageData(imageData, newDimensions);
+    const shouldCrop = !(options.maintainAspectRatio ?? true);
+    processedData = shouldCrop
+      ? cropAndResizeImageData(imageData, newDimensions)
+      : resizeImageData(imageData, newDimensions);
   }
 
   onProgress(50);
